@@ -14,18 +14,18 @@ The raw image data used to train the model is stored in the Images folder, and t
 
 ## MLP Model
 
-The model designed is a simple 3-layer neural network with ReLU activation. 
+This project includes an MLP model designed to classify flattened grayscale 28×28 images of handwritten digits (0–9). Unlike a CNN, the MLP treats each pixel independently, ignoring spatial structure, but can still achieve high accuracy on this dataset.
 
-Input
-  |
-  v
-Linear - ReLU (512 neurons)
-  |
-  v
-Linear - ReLu (512 neurons)
-  |
-  v
-Linear (output) (10 neurons)
+Model Architecture:
+
+| Layer       | Details                                              | Output Shape |
+| ----------- | ---------------------------------------------------- | ------------ |
+| **Flatten** | Converts 28×28 input image into a 784-element vector | [784]        |
+| **FC1**     | Fully connected, 784 → 512                           | [512]        |
+| **ReLU**    | Activation function                                  | [512]        |
+| **FC2**     | Fully connected, 512 → 512                           | [512]        |
+| **ReLU**    | Activation                                           | [512]        |
+| **FC3**     | Fully connected, 512 → 10 (logits)                   | [10]         |
 
 The loss function used was Cross Entropy and Adam was used as the optimizer.
 
@@ -33,7 +33,9 @@ The accuracy of the saved model was 99.2% on a random split of 80:20 of training
 
 ## CNN Model 
 
-The model architecture is as outlined:
+This project includes a CNN model designed to classify grayscale 28×28 images of handwritten digits (0–9). The network leverages spatial patterns in the image to achieve high accuracy.
+
+Model Architecture:
 
 | Layer        | Details                                                                       | Output Shape |
 | ------------ | ----------------------------------------------------------------------------- | ------------ |
