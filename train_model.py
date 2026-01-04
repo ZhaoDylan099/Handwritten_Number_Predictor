@@ -3,50 +3,11 @@ import torch
 import os
 import pandas
 from torch import nn
-from loadNumbers import LoadImageDataset, NeuralNetwork
+from loadNumbers import LoadImageDataset, MLP, CNNModel
 from torch.utils.data import DataLoader
 from torchvision import transforms
 
 
-ANNOTATIONS = 'labels.csv'
-IMG_PATH = 'Images'
-LEARNING_RATE = 1e-3
-BATCH_SIZE = 64
-EPOCHS = 10
-
-
-transform = transforms.Compose([
-    transforms.Grayscale(num_output_channels=1),
-    transforms.ToTensor()
-])
-
-
-dataset = LoadImageDataset(ANNOTATIONS, IMG_PATH, transform=transform)
-
-
-
-
-
-train_dataset, test_dataset = torch.utils.data.random_split(dataset, [int(len(dataset) * 0.8), int(len(dataset) * 0.2)])
-
-train_load = DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=True)
-
-test_load = DataLoader(test_dataset, batch_size=BATCH_SIZE, shuffle=True)
-
-for X, y in train_load:
-    print("shape:", X.shape)
-    print("dtype:", X.dtype)
-    print("min/max:", X.min().item(), X.max().item())
-    break
-
-loss_fn = nn.CrossEntropyLoss()
-
-model = NeuralNetwork()
-
-
-
-
-optimizer = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE)
 
 def train_loop(dataloader, model, loss_fn, optimizer):
     size = len(dataloader.dataset)
@@ -91,13 +52,51 @@ def test_loop(dataloader, model, loss_fn):
 
 
 
+ANNOTATIONS = 'labels.csv'
+IMG_PATH = 'Images'
+LEARNING_RATE = 1e-3
+BATCH_SIZE = 64
+EPOCHS = 10
+
+
+transform = transforms.Compose([
+    transforms.Grayscale(num_output_channels=1),
+    transforms.RandomRotation(15, fill=255),
+    transforms.ToTensor()
+])
+
+
+dataset = LoadImageDataset(ANNOTATIONS, IMG_PATH, transform=transform)
+train_dataset, test_dataset = torch.utils.data.random_split(dataset, [int(len(dataset) * 0.8), int(len(dataset) * 0.2)])
+train_load = DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=True)
+test_load = DataLoader(test_dataset, batch_size=BATCH_SIZE, shuffle=True)
+
+for X, y in train_load:
+    print("shape:", X.shape)
+    print("dtype:", X.dtype)
+    print("min/max:", X.min().item(), X.max().item())
+    break
+
+loss_fn = nn.CrossEntropyLoss()
+MLPNN = MLP()
+CNN = CNNModel()
+
+MLP_optimizer = torch.optim.Adam(MLPNN.parameters(), lr=LEARNING_RATE)
+CNN_optimizer = torch.optim.Adam(CNN.parameters(), lr=LEARNING_RATE)
+
 for t in range(EPOCHS):
     print(f"Epoch {t+1}\n-------------------------------")
-    train_loop(train_load, model, loss_fn, optimizer)
-    test_loop(test_load, model, loss_fn)
+    train_loop(train_load, MLPNN, loss_fn, MLP_optimizer)
+    test_loop(test_load, MLPNN, loss_fn)
 
-PATH = 'model.pth'
-torch.save(model.state_dict(), PATH)
+for t in range(EPOCHS):
+    print(f"Epoch {t+1}\n-------------------------------")
+    train_loop(train_load, CNN, loss_fn, CNN_optimizer)
+    test_loop(test_load, CNN, loss_fn)
 
+MLPPATH = 'MLP.pth'
+CNNPATH = 'CNN.pth'
+torch.save(CNN.state_dict(), CNNPATH)
+torch.save(MLPNN.state_dict(), MLPPATH)
 print("Done!")
 
